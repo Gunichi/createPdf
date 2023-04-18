@@ -1,13 +1,55 @@
-import { Flex, Input, Textarea, Button, FormControl, Box } from '@chakra-ui/react'
-import jsPDF from 'jspdf'
-import { PDFDownloadLink, Document, Page, Text, View, Image } from '@react-pdf/renderer';
-import { useForm } from 'react-hook-form'
-import { useEffect, useState } from 'react'
-import { StyleSheet } from '@react-pdf/renderer'
+import {
+  Flex,
+  Input,
+  Button,
+  Box,
+  SimpleGrid,
+  Image as ChakraImage,
+  Heading,
+  Spinner,
+} from '@chakra-ui/react'
+import { PDFDownloadLink, Document, Page, Text, View, Image, Font, Canvas, StyleSheet } from '@react-pdf/renderer';
+import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import AccordionComponent from '@/components/Accordion/Accordion';
+import { Inputs } from '@/components/Inputs/Inputs';
+import { InputColor } from '@/components/Inputs/InputColor';
+import "react-quill/dist/quill.snow.css";
+import Draggable from 'react-draggable';
+import { Resizable } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 
+interface Wine {
+  name: string;
+  volume: string;
+  type: string;
+  vineyard: string;
+  pairing: string;
+  price: string;
+  image: string;
+}
+
+type TextAlign = 'left' | 'center' | 'right' | 'justify';
 
 export default function Home() {
+
+  Font.register({
+    family: 'Ubuntu',
+    fonts: [
+      {
+        src: 'https://fonts.gstatic.com/s/questrial/v13/QdVUSTchPBm7nuUeVf7EuStkm20oJA.ttf',
+      },
+      {
+        src: 'https://fonts.gstatic.com/s/questrial/v13/QdVUSTchPBm7nuUeVf7EuStkm20oJA.ttf',
+        fontWeight: 'bold',
+      },
+      {
+        src: 'https://fonts.gstatic.com/s/questrial/v13/QdVUSTchPBm7nuUeVf7EuStkm20oJA.ttf',
+        fontWeight: 'normal',
+        fontStyle: 'italic',
+      },
+    ],
+  });
 
   const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((module) => module.PDFViewer), {
     ssr: false,
@@ -17,56 +59,289 @@ export default function Home() {
     ssr: false,
   });
 
-  const { register, handleSubmit } = useForm()
-  const [title, setTitle] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [fontColor, setFontColor] = useState('#00A3D9');
-  const [image, setImage] = useState('');
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const [imageDimensions, setImageDimensions] = useState({ width: 100, height: 100 });
+  const [image, setImage] = useState('null');
+
+  const [titleColor, setTitleColor] = useState('#BB975E');
+  const [titleSize, setTitleSize] = useState(35);
+  const [wines, setWines] = useState<Wine[]>([]);
+  const [title, setTitle] = useState('Carta de Vinho');
+  const [wineName, setWineName] = useState('Angelica Zapata 750 ml');
+  const [wineVolume, setWineVolume] = useState('Malbec-Malbec, 2018');
+  const [wineType, setWineType] = useState('Vinho da vinícula Catena Zapata, tradicional na região de Mendonza na Argentina. Harmoniza perfeitamente com carnes vermelhas.');
+  const [wineVineyard, setWineVineyard] = useState('Argentina');
+  const [winePairing, setWinePairing] = useState('Carne vermelha');
+  const [winePrice, setWinePrice] = useState('R$450,00');
+
+  const [loading, setLoading] = useState(false);
+
+  const [wineContainerPosition, setWineContainerPosition] = useState({ x: 0, y: 0 });
+
+  const [wineNameFontSize, setWineNameFontSize] = useState(16);
+  const [wineNameFontColor, setWineNameFontColor] = useState('#DDCCB2');
+  const [wineNameTextAlign, setWineNameTextAlign] = useState<TextAlign>('left');
+  const [wineNamePosition, setWineNamePosition] = useState({ x: 0, y: 0 });
+
+  const [wineVolumeFontSize, setWineVolumeFontSize] = useState(14);
+  const [wineVolumeFontColor, setWineVolumeFontColor] = useState('#DDCCB2');
+  const [wineVolumePosition, setWineVolumePosition] = useState({ x: 0, y: 0 });
+
+  const [wineTypeFontSize, setWineTypeFontSize] = useState(14);
+  const [wineTypeFontColor, setWineTypeFontColor] = useState('#DDCCB2');
+  const [wineTypePosition, setWineTypePosition] = useState({ x: 0, y: 0 });
+
+  const [wineVineyardFontSize, setWineVineyardFontSize] = useState(14);
+  const [wineVineyardFontColor, setWineVineyardFontColor] = useState('#DDCCB2');
+
+  const [winePairingFontSize, setWinePairingFontSize] = useState(14);
+  const [winePairingFontColor, setWinePairingFontColor] = useState('#DDCCB2');
+
+  const [winePriceFontSize, setWinePriceFontSize] = useState(14);
+  const [winePriceFontColor, setWinePriceFontColor] = useState('#DDCCB2');
+
+  const [indice, setIndice] = useState(0);
 
   const styles = StyleSheet.create({
     page: {
       flexDirection: 'row',
-      backgroundColor: fontColor
+      backgroundColor: '#3E1E24',
+    },
+    header: {
+      margin: 10,
+      padding: 10,
+    },
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 20,
+      marginVertical: 10,
+      padding: 10,
+      borderRadius: 10,
+      border: '1px solid #BB975E',
+      marginTop: 50,
+    },
+    image: {
+      width: imageDimensions.width,
+      height: imageDimensions.height,
+      marginRight: 20,
+    },
+    details: {
+      flex: 1,
     },
     section: {
       margin: 10,
       padding: 10,
       flexGrow: 1,
-      textAlign: 'center',
       width: '100%',
       height: '100%',
     },
+    flex: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
     title: {
-      color: 'white',
-      fontSize: 35,
-      marginTop: 20,
-    }
+      color: titleColor,
+      fontSize: titleSize,
+      position: 'absolute',
+      top: position.y,
+      left: position.x,
+      textAlign: 'center',
+      fontFamily: 'Ubuntu',
+      fontWeight: 'bold',
+    },
+    wineName: {
+      fontSize: wineNameFontSize,
+      fontFamily: 'Ubuntu',
+      color: wineNameFontColor,
+      top: wineNamePosition.y,
+      left: wineNamePosition.x,
+      fontWeight: 'bold',
+      textAlign: wineNameTextAlign,
+    },
+    wineVolume: {
+      fontSize: wineVolumeFontSize,
+      fontStyle: 'italic',
+      color: wineVolumeFontColor,
+      marginBottom: 2,
+      top: wineVolumePosition.y,
+      left: wineVolumePosition.x,
+      textAlign: wineNameTextAlign,
+
+    },
+    wineType: {
+      fontSize: 12,
+      marginTop: 2,
+      color: '#BB975E',
+      marginBottom: 2,
+    },
+    wineVineyard: {
+      fontSize: 10,
+      marginTop: 2,
+      color: '#BB975E',
+      marginBottom: 2,
+    },
+    winePairing: {
+      fontSize: 10,
+      marginTop: 2,
+      color: '#BB975E',
+      marginBottom: 2,
+    },
+    winePrice: {
+      fontSize: 12,
+      marginTop: 2,
+      fontWeight: 'bold',
+      fontFamily: 'Ubuntu',
+      color: '#BB975E',
+      marginBottom: 2,
+    },
   });
 
+  const addWine = () => {
+    setWines([...wines, {
+      name: wineName,
+      volume: wineVolume,
+      type: wineType,
+      vineyard: wineVineyard,
+      pairing: winePairing,
+      price: winePrice,
+      image: image,
+    }])
+  }
+
+  const handleDragWineContainer = (e: any, ui: any) => {
+    const { x, y } = wineContainerPosition;
+    setWineContainerPosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  }
+
+  const handleDragPosition = (e: any, ui: any) => {
+    const { x, y } = position;
+    setPosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  }
+
+  const handleDragWineName = (e: any, ui: any) => {
+    const { x, y } = wineNamePosition;
+    setWineNamePosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  }
+
+  const handleDragWineVolume = (e: any, ui: any) => {
+    const { x, y } = wineVolumePosition;
+    setWineVolumePosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  }
+
+  const handleDragWineType = (e: any, ui: any) => {
+    const { x, y } = wineTypePosition;
+    setWineTypePosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  }
+
+  // const handleDragWineVineyard = (e: any, ui: any) => {
+  //   const { x, y } = wineVineyardPosition;
+  //   setWineVineyardPosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  // }
+
+  // const handleDragWinePairing = (e: any, ui: any) => {
+  //   const { x, y } = winePairingPosition;
+  //   setWinePairingPosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  // }
+
+  // const handleDragWinePrice = (e: any, ui: any) => {
+  //   const { x, y } = winePricePosition;
+  //   setWinePricePosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  // }
+
+  // const handleDragWineImage = (e: any, ui: any) => {
+  //   const { x, y } = wineImagePosition;
+  //   setWineImagePosition({ x: x + ui.deltaX, y: y + ui.deltaY });
+  // }
+
+  // const handleMargin = (event: any, type: string) => {
+  //   switch (type) {
+  //     case 'top':
+  //       setWineNameMarginTop(event.target.value);
+  //       break;
+  //     case 'left':
+  //       setWineNameMarginLeft(event.target.value);
+  //       break;
+  //     case 'right':
+  //       setWineNameMarginRight(event.target.value);
+  //       break;
+  //     case 'bottom':
+  //       setWineNameMarginBottom(event.target.value);
+  //       break;
+  //   }
+  // }
+
+  const handleAddImage = (event: any) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      setImage(reader.result as string);
+    }
+  }
+
+  const handleResize = (event: any, { size }: any) => {
+    setImageDimensions({ width: size.width, height: size.height });
+  };
+
+  const removeLastWine = () => {
+    const newWines = wines.slice(0, wines.length - 1);
+    setWines(newWines);
+  }
+
+  const editWine = () => {
+    const newWines = wines.map((wine, index) => {
+      if (index === indice) {
+        return {
+          name: wineName,
+          volume: wineVolume,
+          type: wineType,
+          vineyard: wineVineyard,
+          pairing: winePairing,
+          price: winePrice,
+          image: image,
+        }
+      }
+      return wine;
+    })
+    setWines(newWines);
+  }
 
   const MyDocument = (
-    <Document >
+    <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
-          <View style={{ alignItems: "center", justifyContent: "center" }}>
-            <Image src={image} style={{width: 100, height: 100 }} />
-          </View>
           <Text style={styles.title}>
             {title}
           </Text>
-          <View style={{display: "flex", flexDirection: "row", marginBottom: 70}}>
-            <Text style={{flex: 1}}>Left</Text>
-            <Text style={{flex: 1}}>Right</Text>
-          </View>
+          {wines.map((wine, index) => (
+            <View style={styles.container} key={index}>
+              <View style={styles.details}>
+                <View style={styles.flex}>
+                  <Text style={styles.wineName}>{wine.name}</Text>
+                </View>
+                <Text style={styles.wineVolume}>{wine.volume}</Text>
+                <Text style={styles.wineType}>{wine.type}</Text>
+                <Text style={styles.wineVineyard}>{wine.vineyard}</Text>
+                <Text style={styles.winePairing}>{wine.pairing}</Text>
+                <Text style={styles.winePrice}>{wine.price}</Text>
+              </View>
+              <Image style={styles.image} src={wine.image} />
+            </View>
+          ))}
         </View>
       </Page>
     </Document>
-  );
+  )
+
 
   const PDFView = () => {
     return (
-      <div style={{ width: '100%', height: '600px' }}>
-        <PDFViewer width="100%" height="100%">
+      <div style={{ width: '50%', height: '800px' }}>
+        <PDFViewer width="100%" height="100%" showToolbar={false}>
           {MyDocument}
         </PDFViewer>
       </div>
@@ -75,29 +350,181 @@ export default function Home() {
 
   return (
     <>
-      {/* <Head>
-        <title>Create Next App</title>
-        <meta name="description" content="Generated by create next app" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head> */}
-
-      <Box w="100%" h="100%" bg="gray.100" p="4">
-        <Flex direction="column" align="center" justify="center" h="100vh">      
-          <form>
-            <FormControl mb="2">
-              <Input id="Text" placeholder="Text" {...register('Text')} onChange={(e) => setTitle(e.target.value)} mb="2" />
-              <Input id="image" placeholder="image" {...register('image')} onChange={(e) => setImage(e.target.value)} mb="2" />
-              <Input type="color" id="fontColor" name="fontColor" value={fontColor} onChange={(e) => setFontColor(e.target.value)} mb="2" />
-              <Button mb="2">
-                <PDFLink document={MyDocument} fileName="meu-pdf.pdf">
-                Baixar PDF
-                </PDFLink>        
+      <Box w="100%" h="100%" bg="gray.100" p="20">
+        <Flex direction="column" align="center" justify="center" h="280vh" mt={10}>
+          <Heading mb="4">Gerador</Heading>
+          <Box bg="white" p="4" borderRadius="md" shadow="md" w="80%" mb='4'>
+            <Inputs onChange={(event) => setTitle(event.target.value)} value={title} label='Título' />
+            <AccordionComponent title="Nome" mt="4">
+              <Flex>
+                <Box w="60%" mr="4">
+                  <Inputs onChange={(event) => setWineName(event.target.value)} value={wineName} label='Nome do vinho' />
+                </Box>
+                <Box w="20%" mr="4">
+                  <Inputs onChange={(event) => setWineNameFontSize(event.target.value)} value={wineNameFontSize} label='FontSize' />
+                </Box>
+                <Box w="20%">
+                  <InputColor onChange={(event) => setWineNameFontColor(event.target.value)} value={wineNameFontColor} label='Cor' />
+                </Box>
+              </Flex>
+            </AccordionComponent>
+            <AccordionComponent title="Volume" mt="4">
+              <Flex>
+                <Box w="60%" mr="4">
+                  <Inputs onChange={(event) => setWineVolume(event.target.value)} value={wineVolume} label='Volume' />
+                </Box>
+                <Box w="20%" mr="4">
+                  <Inputs onChange={(event) => setWineVolumeFontSize(event.target.value)} value={wineVolumeFontSize} label='Volume' />
+                </Box>
+                <Box w="20%">
+                  <InputColor onChange={(event) => setWineVolumeFontColor(event.target.value)} value={wineVolumeFontColor} label='Cor' />
+                </Box>
+              </Flex>
+            </AccordionComponent>
+            <AccordionComponent title="Tipo" mt="4">
+              <Flex>
+                <Box w={['40%', '40%', '60%', '60%']} mr="4">
+                  <Inputs onChange={(event) => setWineType(event.target.value)} value={wineType} label='Tipo' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <Inputs onChange={(event) => setWineTypeFontSize(event.target.value)} value={wineTypeFontSize} label='Volume' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']}>
+                  <InputColor onChange={(event) => setWineTypeFontColor(event.target.value)} value={wineTypeFontColor} label='Cor' />
+                </Box>
+              </Flex>
+            </AccordionComponent>
+            <AccordionComponent title="Vinícola" mt="4">
+              <Flex>
+                <Box w={['40%', '40%', '60%', '60%']} mr="4">
+                  <Inputs onChange={(event) => setWineVineyard(event.target.value)} value={wineVineyard} label='Vinícola' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <Inputs onChange={(event) => setWineVineyardFontSize(event.target.value)} value={wineVineyardFontSize} label='Volume' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']}>
+                  <InputColor onChange={(event) => setWineVineyardFontColor(event.target.value)} value={wineVineyardFontColor} label='Cor' />
+                </Box>
+              </Flex>
+            </AccordionComponent>
+            <AccordionComponent title="Harmonização" mt="4">
+              <Flex>
+                <Box w={['40%', '40%', '60%', '60%']} mr="4">
+                  <Inputs onChange={(event) => setWinePairing(event.target.value)} value={winePairing} label='Harmonização' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <Inputs onChange={(event) => setWinePairingFontSize(event.target.value)} value={winePairingFontSize} label='Volume' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']}>
+                  <InputColor onChange={(event) => setWinePairingFontColor(event.target.value)} value={winePairingFontColor} label='Cor' />
+                </Box>
+              </Flex>
+            </AccordionComponent>
+            <AccordionComponent title="Preço" mt="4">
+              <Flex>
+                <Box w={['40%', '40%', '60%', '60%']} mr="4">
+                  <Inputs onChange={(event) => setWinePrice(event.target.value)} value={winePrice} label='Preço' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <Inputs onChange={(event) => setWinePriceFontSize(event.target.value)} value={winePriceFontSize} label='Volume' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']}>
+                  <InputColor onChange={(event) => setWinePriceFontColor(event.target.value)} value={winePriceFontColor} label='Cor' />
+                </Box>
+              </Flex>
+            </AccordionComponent>
+            <Input type="file" onChange={handleAddImage} />
+            <SimpleGrid columns={[2, 2, 3]} spacing={10} p="4" mt="4">
+              <Button
+                onClick={addWine}
+                mb="2"
+                bg={'#3E1E24'}
+                color={'#BB975E'}
+                _hover={{
+                  bg: '#BB975E',
+                  color: '#3E1E24',
+                }}
+              >
+                Adicionar vinho
               </Button>
-            </FormControl>
-          </form>
+              <Button onClick={editWine} mb="2" width="100%" bg={'#3E1E24'} color={'#BB975E'} _hover={{ bg: '#BB975E', color: '#3E1E24' }}>
+                Atualizar vinho
+              </Button>
+              <Button
+                onClick={removeLastWine}
+                mb="2"
+                bg={'#3E1E24'}
+                color={'#BB975E'}
+                _hover={{
+                  bg: '#BB975E',
+                  color: '#3E1E24',
+                }}
+              >
+                Remover vinho
+              </Button>
+            </SimpleGrid>
+            <Button
+              mb="2"
+              width="100%"
+              bg={'#3E1E24'}
+              color={'#BB975E'}
+              _hover={{
+                bg: '#BB975E',
+                color: '#3E1E24',
+              }}
+            >
+              <PDFLink document={MyDocument} fileName="wine.pdf">
+                Baixar PDF
+              </PDFLink>
+            </Button>
+          </Box>
+          <Flex direction="row" w="100%" justifyContent="center">
+            <Box
+              w="210mm"
+              h="212mm"
+              bg="white"
+              boxShadow="0 0 1mm rgba(0, 0, 0, 0.2)"
+              p="1cm"
+              overflow="hidden"
+            >
+              <Draggable onDrag={handleDragPosition}>
+                <div>{title}</div>
+              </Draggable>
+              {wines.map((wine, index) => (
+                <div key={index}>
+                  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <Draggable onDrag={handleDragWineName}>
+                        <div>{wine.name}</div>
+                      </Draggable>
+                      <Draggable onDrag={handleDragWineVolume}>
+                        <div>{wine.volume}</div>
+                      </Draggable>
+                      <Draggable onDrag={handleDragWineType}>
+                        <div>{wine.type}</div>
+                      </Draggable>
+                      {/* <Draggable onDrag={handleDragWineVineyard}>
+                        <div>{wine.vineyard}</div>
+                      </Draggable>
+                      <Draggable onDrag={handleDragWinePairing}>
+                        <div>{wine.pairing}</div>
+                      </Draggable>
+                      <Draggable onDrag={handleDragWinePrice}>
+                        <div>{wine.price}</div>
+                      </Draggable>                    */}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <Resizable onResize={handleResize} width={imageDimensions.width} height={imageDimensions.height}>
+                <div>
+                  <ChakraImage src={image} alt="wine" style={styles.image} />
+                </div>
+              </Resizable>
+            </Box>
+            <PDFView />
+          </Flex>
         </Flex>
-        <PDFView />
       </Box>
     </>
   )
