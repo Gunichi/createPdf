@@ -6,7 +6,7 @@ import {
   SimpleGrid,
   Image as ChakraImage,
   Heading,
-  Spinner,
+  Icon,
 } from '@chakra-ui/react'
 import { PDFDownloadLink, Document, Page, Text, View, Image, Font, Canvas, StyleSheet } from '@react-pdf/renderer';
 import { useEffect, useRef, useState } from 'react'
@@ -18,6 +18,9 @@ import "react-quill/dist/quill.snow.css";
 import Draggable from 'react-draggable';
 import { Resizable } from 'react-resizable';
 import 'react-resizable/css/styles.css';
+import SelectInput from '@/components/Inputs/Select';
+
+import { FiUpload } from 'react-icons/fi';
 
 interface Wine {
   name: string;
@@ -61,6 +64,8 @@ export default function Home() {
 
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
+  const [paperBackground, setPaperBackground] = useState('#3E1E24');
+
   const [imageDimensions, setImageDimensions] = useState({ width: 100, height: 100 });
   const [image, setImage] = useState('null');
 
@@ -101,12 +106,19 @@ export default function Home() {
   const [winePriceFontSize, setWinePriceFontSize] = useState(14);
   const [winePriceFontColor, setWinePriceFontColor] = useState('#DDCCB2');
 
+  const [borderSize, setBorderSize] = useState(1);
+  const [borderColor, setBorderColor] = useState('#BB975E');
+  const [borderRadius, setBorderRadius] = useState(10);
+  const [borderStyle, setBorderStyle] = useState('solid');
+
   const [indice, setIndice] = useState(0);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const styles = StyleSheet.create({
     page: {
       flexDirection: 'row',
-      backgroundColor: '#3E1E24',
+      backgroundColor: paperBackground,
     },
     header: {
       margin: 10,
@@ -118,14 +130,15 @@ export default function Home() {
       marginHorizontal: 20,
       marginVertical: 10,
       padding: 10,
-      borderRadius: 10,
-      border: '1px solid #BB975E',
+      borderRadius: borderRadius,
+      border: `${borderSize}px ${borderStyle} ${borderColor}`,
       marginTop: 50,
     },
     image: {
       width: imageDimensions.width,
       height: imageDimensions.height,
-      marginRight: 20,
+      marginRight: 5,
+      marginLeft: 10,
     },
     details: {
       flex: 1,
@@ -211,6 +224,8 @@ export default function Home() {
       image: image,
     }])
   }
+
+  const borderTypes = [ 'solid', 'dotted', 'dashed' ];
 
   const handleDragWineContainer = (e: any, ui: any) => {
     const { x, y } = wineContainerPosition;
@@ -351,10 +366,34 @@ export default function Home() {
   return (
     <>
       <Box w="100%" h="100%" bg="gray.100" p="20">
-        <Flex direction="column" align="center" justify="center" h="280vh" mt={10}>
+        <Flex direction="column" align="center" justify="center" mt={5}>
           <Heading mb="4">Gerador</Heading>
           <Box bg="white" p="4" borderRadius="md" shadow="md" w="80%" mb='4'>
-            <Inputs onChange={(event) => setTitle(event.target.value)} value={title} label='Título' />
+            <Flex>
+              <Box w={['40%', '40%', '60%', '60%']} mr="4">
+                <Inputs onChange={(event) => setTitle(event.target.value)} value={title} label='Título' />
+              </Box>
+              <Box w={['20%', '20%', '20%', '20%']} mr="4">
+                <InputColor onChange={(event) => setTitleColor(event.target.value)} value={titleColor} label='Cor do título' />
+              </Box>
+              <Box w={['20%', '20%', '20%', '20%']} mr="4">
+                <InputColor onChange={(event) => setPaperBackground(event.target.value)} value={paperBackground} label='Cor do papel' />
+              </Box>
+            </Flex>
+            <Flex mt="4">
+              <Box w={['40%', '40%', '60%', '60%']} mr="4">
+                <Inputs mr="10" onChange={(event) => setBorderSize(event.target.value)} value={borderSize} label='Tamanho da borda' />
+              </Box>
+              <Box w={['20%', '20%', '20%', '20%']} mr="4">
+                <InputColor onChange={(event) => setBorderColor(event.target.value)} value={borderColor} label='Cor da borda' />
+              </Box>
+              <Box w={['20%', '20%', '20%', '20%']} mr="4">
+                <Inputs mr="4" onChange={(event) => setBorderRadius(event.target.value)} value={borderRadius} label='Raio da borda' />
+              </Box>
+              <Box w={['20%', '20%', '20%', '20%']} mr="4">
+                <SelectInput onChange={(event) => setBorderStyle(event.target.value)} value={borderStyle} label='Estilo da borda' options={borderTypes} name="border" />
+              </Box>
+            </Flex>
             <AccordionComponent title="Nome" mt="4">
               <Flex>
                 <Box w="60%" mr="4">
@@ -433,7 +472,23 @@ export default function Home() {
                 </Box>
               </Flex>
             </AccordionComponent>
-            <Input type="file" onChange={handleAddImage} />
+            <label htmlFor="fileInput">
+              <Button as="a" size="md" fontSize="sm" bg="#3E1E24" leftIcon={<Icon as={FiUpload} fontSize="20" />} color="#BB975E" _hover={{ bg: '#BB975E', color: '#3E1E24' }}>
+                Adicionar imagem
+              </Button>
+                
+            </label>
+            <Input
+              type="file"
+              id="fileInput"
+              ref={fileInputRef}
+              opacity={0}
+              position="absolute"
+              zIndex="-1"
+              pointerEvents="none"
+              onChange={handleAddImage}
+            />
+
             <SimpleGrid columns={[2, 2, 3]} spacing={10} p="4" mt="4">
               <Button
                 onClick={addWine}
