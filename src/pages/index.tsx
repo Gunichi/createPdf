@@ -21,6 +21,7 @@ import 'react-resizable/css/styles.css';
 import SelectInput from '@/components/Inputs/Select';
 
 import { FiUpload } from 'react-icons/fi';
+import Select from '@/components/Inputs/Select';
 
 interface Wine {
   name: string;
@@ -54,6 +55,43 @@ export default function Home() {
     ],
   });
 
+  Font.register({
+    family: 'Koshy',
+    fonts: [
+      {
+        src: './fonts/Koshy.ttf',
+      },
+      {
+        src: './fonts/Koshy.ttf',
+        fontWeight: 'bold',
+      },
+      {
+        src: './fonts/Koshy.ttf',
+        fontWeight: 'normal',
+        fontStyle: 'italic',
+      },
+    ]
+  })
+
+  Font.register({
+    family: 'Adam',
+    fonts: [
+      {
+        src: './fonts/Adam.otf',
+      },
+      {
+        src: './fonts/Adam.otf',
+        fontWeight: 'bold',
+      },
+      {
+        src: './fonts/Adam.otf',
+        fontWeight: 'normal',
+        fontStyle: 'italic',
+      },
+    ]
+  })
+
+
   const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((module) => module.PDFViewer), {
     ssr: false,
   });
@@ -71,6 +109,9 @@ export default function Home() {
 
   const [titleColor, setTitleColor] = useState('#BB975E');
   const [titleSize, setTitleSize] = useState(35);
+  const [wineFontFamily, setWineFontFamily] = useState('Ubuntu');
+
+
   const [wines, setWines] = useState<Wine[]>([]);
   const [title, setTitle] = useState('Carta de Vinho');
   const [wineName, setWineName] = useState('Angelica Zapata 750 ml');
@@ -132,7 +173,7 @@ export default function Home() {
       padding: 10,
       borderRadius: borderRadius,
       border: `${borderSize}px ${borderStyle} ${borderColor}`,
-      marginTop: 50,
+      marginTop: 80,
     },
     image: {
       width: imageDimensions.width,
@@ -160,10 +201,13 @@ export default function Home() {
       color: titleColor,
       fontSize: titleSize,
       position: 'absolute',
-      top: position.y,
-      left: position.x,
+      // marginTop: 10,
+      // top: position.y,
+      // left: position.x,
+      top: 10,
+      margin: 30,
       textAlign: 'center',
-      fontFamily: 'Ubuntu',
+      fontFamily: wineFontFamily,
       fontWeight: 'bold',
     },
     wineName: {
@@ -372,6 +416,7 @@ export default function Home() {
             <Flex>
               <Box w={['40%', '40%', '60%', '60%']} mr="4">
                 <Inputs onChange={(event) => setTitle(event.target.value)} value={title} label='Título' />
+                <Select onChange={(event) => setWineFontFamily(event.target.value)} value={wineFontFamily} label='Fonte' options={['Ubuntu', 'Koshy', 'Adam']} name="font" />
               </Box>
               <Box w={['20%', '20%', '20%', '20%']} mr="4">
                 <InputColor onChange={(event) => setTitleColor(event.target.value)} value={titleColor} label='Cor do título' />
