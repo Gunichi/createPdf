@@ -102,6 +102,8 @@ export default function Home() {
 
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
+  const [firstPageBackground, setFirstPageBackground] = useState('#FFF');
+
   const [paperBackground, setPaperBackground] = useState('#3E1E24');
 
   const [imageDimensions, setImageDimensions] = useState({ width: 100, height: 100 });
@@ -110,7 +112,6 @@ export default function Home() {
   const [titleColor, setTitleColor] = useState('#BB975E');
   const [titleSize, setTitleSize] = useState(35);
   const [wineFontFamily, setWineFontFamily] = useState('Ubuntu');
-
 
   const [wines, setWines] = useState<Wine[]>([]);
   const [title, setTitle] = useState('Carta de Vinho');
@@ -154,9 +155,68 @@ export default function Home() {
 
   const [indice, setIndice] = useState(0);
 
+  const [display, setDisplay] = useState('flex');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const logoTypes = [
+    'logoPreta.png',
+    'logoBranca.png',
+    'subLogoRosa.png',
+    'subLogoAzulClaro.png',
+    'subLogoAzulEscuro.png',
+  ]
+
+  const [logo, setLogo] = useState(logoTypes[0]);
+
+  //Handle logo change
+  const handleLogoChange = () => {
+    const index = logoTypes.indexOf(logo);
+    if (index === logoTypes.length - 1) {
+      setLogo(logoTypes[0]);
+    } else {
+      setLogo(logoTypes[index + 1]);
+    }
+  }
+
+  useEffect(() => {
+    if (logo === 'subLogoRosa.png') {
+      setFirstPageBackground('#FCDCDC');
+      setDisplay('none');
+    } else if (logo === 'subLogoAzulClaro.png') {
+      setFirstPageBackground('#00324A');
+      setDisplay('none');
+    } else if (logo === 'subLogoAzulEscuro.png') {
+      setFirstPageBackground('#A7BFCC');
+      setDisplay('none');
+    } 
+  }, [logo])
+
+
   const styles = StyleSheet.create({
+    firstPage: {
+      flexDirection: 'row',
+      backgroundColor: firstPageBackground
+    },
+    firstSectionPage: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '100%',
+      height: '100%'
+    },
+    lastSectionPage: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      alignContent: 'center',
+      width: '100%',
+      height: '100%'
+    },
+    logoImage: {
+      width: 200,
+      height: 150,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     page: {
       flexDirection: 'row',
       backgroundColor: paperBackground,
@@ -209,6 +269,12 @@ export default function Home() {
       textAlign: 'center',
       fontFamily: wineFontFamily,
       fontWeight: 'bold',
+    },
+    lastPageText: {
+      color: titleColor,
+      fontSize: '12',
+      position: 'absolute',
+      marginTop: 10,
     },
     wineName: {
       fontSize: wineNameFontSize,
@@ -369,9 +435,15 @@ export default function Home() {
     setWines(newWines);
   }
 
+
   const MyDocument = (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.firstPage} wrap={false}>
+        <View style={styles.firstSectionPage}>
+          <Image style={styles.logoImage} src={logo} />
+        </View>
+      </Page>
+      <Page size="A4" style={styles.page} wrap={false}>
         <View style={styles.section}>
           <Text style={styles.title}>
             {title}
@@ -391,6 +463,16 @@ export default function Home() {
               <Image style={styles.image} src={wine.image} />
             </View>
           ))}
+        </View>
+      </Page>
+      <Page size="A4" style={styles.firstPage} wrap={false}>
+        <View style={styles.lastSectionPage}>
+          <Text style={styles.lastPageText}>
+            <Icon as={FiUpload} fontSize="20" />
+            Instagram: @vinhos
+            Whatsapp: (11) 99999-9999
+            Site: www.vinhos.com.br
+          </Text>
         </View>
       </Page>
     </Document>
@@ -414,12 +496,16 @@ export default function Home() {
           <Heading mb="4">Gerador</Heading>
           <Box bg="white" p="4" borderRadius="md" shadow="md" w="80%" mb='4'>
             <Flex>
+              <Select onChange={handleLogoChange} value={logo} label='Logo' options={logoTypes} name="logo" />
               <Box w={['40%', '40%', '60%', '60%']} mr="4">
                 <Inputs onChange={(event) => setTitle(event.target.value)} value={title} label='Título' />
                 <Select onChange={(event) => setWineFontFamily(event.target.value)} value={wineFontFamily} label='Fonte' options={['Ubuntu', 'Koshy', 'Adam']} name="font" />
               </Box>
               <Box w={['20%', '20%', '20%', '20%']} mr="4">
                 <InputColor onChange={(event) => setTitleColor(event.target.value)} value={titleColor} label='Cor do título' />
+              </Box>
+              <Box w={['20%', '20%', '20%', '20%']} mr="4" display={display}>
+                <InputColor onChange={(event) => setFirstPageBackground(event.target.value)} value={firstPageBackground} label='Cor do papel' />
               </Box>
               <Box w={['20%', '20%', '20%', '20%']} mr="4">
                 <InputColor onChange={(event) => setPaperBackground(event.target.value)} value={paperBackground} label='Cor do papel' />
