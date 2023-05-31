@@ -468,7 +468,6 @@ export default function Home() {
       <Page size="A4" style={styles.firstPage} wrap={false}>
         <View style={styles.lastSectionPage}>
           <Text style={styles.lastPageText}>
-            <Icon as={FiUpload} fontSize="20" />
             Instagram: @vinhos
             Whatsapp: (11) 99999-9999
             Site: www.vinhos.com.br
