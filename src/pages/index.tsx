@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+
 import {
   Flex,
   Input,
@@ -8,20 +10,43 @@ import {
   Heading,
   Icon,
 } from '@chakra-ui/react'
-import { PDFDownloadLink, Document, Page, Text, View, Image, Font, Canvas, StyleSheet } from '@react-pdf/renderer';
-import { useEffect, useRef, useState } from 'react'
+
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  Image,
+  Font,
+  Canvas,
+  StyleSheet
+} from '@react-pdf/renderer';
+
+const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((module) => module.PDFViewer), {
+  ssr: false,
+});
+
+const PDFLink = dynamic(() => import('@react-pdf/renderer').then((module) => module.PDFDownloadLink), {
+  ssr: false,
+});
+
 import dynamic from 'next/dynamic'
+
 import AccordionComponent from '@/components/Accordion/Accordion';
 import { Inputs } from '@/components/Inputs/Inputs';
 import { InputColor } from '@/components/Inputs/InputColor';
+import SelectInput from '@/components/Inputs/Select';
+import Select from '@/components/Inputs/Select';
+
 import "react-quill/dist/quill.snow.css";
+
 import Draggable from 'react-draggable';
 import { Resizable } from 'react-resizable';
 import 'react-resizable/css/styles.css';
-import SelectInput from '@/components/Inputs/Select';
 
 import { FiUpload } from 'react-icons/fi';
-import Select from '@/components/Inputs/Select';
+import { GiWineBottle } from 'react-icons/gi';
+import Head from 'next/head';
 
 interface Wine {
   name: string;
@@ -31,6 +56,9 @@ interface Wine {
   pairing: string;
   price: string;
   image: string;
+  instagram?: string;
+  whatsapp?: string;
+  site?: string;
 }
 
 type TextAlign = 'left' | 'center' | 'right' | 'justify';
@@ -90,15 +118,6 @@ export default function Home() {
       },
     ]
   })
-
-
-  const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((module) => module.PDFViewer), {
-    ssr: false,
-  });
-
-  const PDFLink = dynamic(() => import('@react-pdf/renderer').then((module) => module.PDFDownloadLink), {
-    ssr: false,
-  });
 
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -169,7 +188,25 @@ export default function Home() {
 
   const [logo, setLogo] = useState(logoTypes[0]);
 
-  //Handle logo change
+
+  const [socialFontFamily, setSocialFontFamily] = useState('Ubuntu');
+
+  const [instagram, setInstagram] = useState('@');
+  const [instagramFontSize, setInstagramFontSize] = useState(12);
+  const [instagramFontColor, setInstagramFontColor] = useState('#BB975E');
+
+  const [whatsapp, setWhatsapp] = useState('34');
+  const [whatsappFontSize, setWhatsappFontSize] = useState(12);
+  const [whatsappFontColor, setWhatsappFontColor] = useState('#BB975E');
+
+  const [site, setSite] = useState('www');
+  const [siteFontSize, setSiteFontSize] = useState(12);
+  const [siteFontColor, setSiteFontColor] = useState('#BB975E');
+
+  const [cardDate, setCardDate] = useState('01/01/2021');
+  const [cardDateFontSize, setCardDateFontSize] = useState(12);
+  const [cardDateFontColor, setCardDateFontColor] = useState('#BB975E');
+
   const handleLogoChange = () => {
     const index = logoTypes.indexOf(logo);
     if (index === logoTypes.length - 1) {
@@ -182,14 +219,26 @@ export default function Home() {
   useEffect(() => {
     if (logo === 'subLogoRosa.png') {
       setFirstPageBackground('#FCDCDC');
+      setInstagramFontColor('#911746');
+      setWhatsappFontColor('#911746');
+      setSiteFontColor('#911746');
+      setCardDateFontColor('#911746');
       setDisplay('none');
     } else if (logo === 'subLogoAzulClaro.png') {
       setFirstPageBackground('#00324A');
+      setInstagramFontColor('#A7BFCC');
+      setWhatsappFontColor('#A7BFCC');
+      setSiteFontColor('#A7BFCC');
+      setCardDateFontColor('#A7BFCC');
       setDisplay('none');
     } else if (logo === 'subLogoAzulEscuro.png') {
       setFirstPageBackground('#A7BFCC');
+      setInstagramFontColor('#00324A');
+      setWhatsappFontColor('#00324A');
+      setSiteFontColor('#00324A');
+      setCardDateFontColor('#00324A');
       setDisplay('none');
-    } 
+    }
   }, [logo])
 
 
@@ -207,7 +256,6 @@ export default function Home() {
     lastSectionPage: {
       justifyContent: 'center',
       alignItems: 'center',
-      alignContent: 'center',
       width: '100%',
       height: '100%'
     },
@@ -321,6 +369,38 @@ export default function Home() {
       color: '#BB975E',
       marginBottom: 2,
     },
+    instagram: {
+      fontSize: 12,
+      marginTop: 2,
+      fontWeight: 'bold',
+      fontFamily: socialFontFamily,
+      color: instagramFontColor,
+      marginBottom: 2,
+    },
+    whatsapp: {
+      fontSize: 12,
+      marginTop: 2,
+      fontWeight: 'bold',
+      fontFamily: socialFontFamily,
+      color: whatsappFontColor,
+      marginBottom: 2,
+    },
+    website: {
+      fontSize: 12,
+      marginTop: 2,
+      fontWeight: 'bold',
+      fontFamily: socialFontFamily,
+      color: siteFontColor,
+      marginBottom: 2,
+    },
+    cardDate: {
+      fontSize: 12,
+      marginTop: 2,
+      fontWeight: 'bold',
+      fontFamily: socialFontFamily,
+      color: cardDateFontColor,
+      marginBottom: 2,
+    },
   });
 
   const addWine = () => {
@@ -332,10 +412,13 @@ export default function Home() {
       pairing: winePairing,
       price: winePrice,
       image: image,
+      instagram: instagram,
+      whatsapp: whatsapp,
+      site: site,
     }])
   }
 
-  const borderTypes = [ 'solid', 'dotted', 'dashed' ];
+  const borderTypes = ['solid', 'dotted', 'dashed'];
 
   const handleDragWineContainer = (e: any, ui: any) => {
     const { x, y } = wineContainerPosition;
@@ -361,43 +444,6 @@ export default function Home() {
     const { x, y } = wineTypePosition;
     setWineTypePosition({ x: x + ui.deltaX, y: y + ui.deltaY });
   }
-
-  // const handleDragWineVineyard = (e: any, ui: any) => {
-  //   const { x, y } = wineVineyardPosition;
-  //   setWineVineyardPosition({ x: x + ui.deltaX, y: y + ui.deltaY });
-  // }
-
-  // const handleDragWinePairing = (e: any, ui: any) => {
-  //   const { x, y } = winePairingPosition;
-  //   setWinePairingPosition({ x: x + ui.deltaX, y: y + ui.deltaY });
-  // }
-
-  // const handleDragWinePrice = (e: any, ui: any) => {
-  //   const { x, y } = winePricePosition;
-  //   setWinePricePosition({ x: x + ui.deltaX, y: y + ui.deltaY });
-  // }
-
-  // const handleDragWineImage = (e: any, ui: any) => {
-  //   const { x, y } = wineImagePosition;
-  //   setWineImagePosition({ x: x + ui.deltaX, y: y + ui.deltaY });
-  // }
-
-  // const handleMargin = (event: any, type: string) => {
-  //   switch (type) {
-  //     case 'top':
-  //       setWineNameMarginTop(event.target.value);
-  //       break;
-  //     case 'left':
-  //       setWineNameMarginLeft(event.target.value);
-  //       break;
-  //     case 'right':
-  //       setWineNameMarginRight(event.target.value);
-  //       break;
-  //     case 'bottom':
-  //       setWineNameMarginBottom(event.target.value);
-  //       break;
-  //   }
-  // }
 
   const handleAddImage = (event: any) => {
     const file = event.target.files[0];
@@ -467,11 +513,10 @@ export default function Home() {
       </Page>
       <Page size="A4" style={styles.firstPage} wrap={false}>
         <View style={styles.lastSectionPage}>
-          <Text style={styles.lastPageText}>
-            Instagram: @vinhos
-            Whatsapp: (11) 99999-9999
-            Site: www.vinhos.com.br
-          </Text>
+          <Text style={styles.instagram}>Instagram:{instagram}</Text>
+          <Text style={styles.whatsapp}>Whatsapp: {whatsapp}</Text>
+          <Text style={styles.website}>Site: {site}</Text>
+          <Text style={styles.cardDate}>Data: {cardDate}</Text>
         </View>
       </Page>
     </Document>
@@ -490,17 +535,30 @@ export default function Home() {
 
   return (
     <>
+      <Head>
+        <title>Gerador de carta de vinhos</title>
+      </Head>
       <Box w="100%" h="100%" bg="gray.100" p="20">
         <Flex direction="column" align="center" justify="center" mt={5}>
-          <Heading mb="4">Gerador</Heading>
+          <Box w="80%" mb='4' flex={1}>
+            <Heading as="h1" size="lg" color="gray.700" mr="4" textAlign="center">
+              Gerador de carta de vinhos 
+            </Heading>
+            <Heading as="h2" size="md" color="gray.600" mr="4" textAlign="center">
+              Crie sua carta de vinhos de forma simples e rápida
+            </Heading>
+          </Box>          
           <Box bg="white" p="4" borderRadius="md" shadow="md" w="80%" mb='4'>
+          <AccordionComponent title="Configurações" mt="4">
             <Flex>
-              <Select onChange={handleLogoChange} value={logo} label='Logo' options={logoTypes} name="logo" />
+              <Select onChange={handleLogoChange} value={logo} label='Logo' options={logoTypes} name="logo" mr="4" />
               <Box w={['40%', '40%', '60%', '60%']} mr="4">
                 <Inputs onChange={(event) => setTitle(event.target.value)} value={title} label='Título' />
-                <Select onChange={(event) => setWineFontFamily(event.target.value)} value={wineFontFamily} label='Fonte' options={['Ubuntu', 'Koshy', 'Adam']} name="font" />
               </Box>
-              <Box w={['20%', '20%', '20%', '20%']} mr="4">
+              <Select onChange={(event) => setWineFontFamily(event.target.value)} value={wineFontFamily} label='Fonte' options={['Ubuntu', 'Koshy', 'Adam']} name="font" />
+            </Flex>
+            <Flex mt="4">
+            <Box w={['20%', '20%', '20%', '20%']} mr="4">
                 <InputColor onChange={(event) => setTitleColor(event.target.value)} value={titleColor} label='Cor do título' />
               </Box>
               <Box w={['20%', '20%', '20%', '20%']} mr="4" display={display}>
@@ -509,8 +567,6 @@ export default function Home() {
               <Box w={['20%', '20%', '20%', '20%']} mr="4">
                 <InputColor onChange={(event) => setPaperBackground(event.target.value)} value={paperBackground} label='Cor do papel' />
               </Box>
-            </Flex>
-            <Flex mt="4">
               <Box w={['40%', '40%', '60%', '60%']} mr="4">
                 <Inputs mr="10" onChange={(event) => setBorderSize(event.target.value)} value={borderSize} label='Tamanho da borda' />
               </Box>
@@ -524,6 +580,7 @@ export default function Home() {
                 <SelectInput onChange={(event) => setBorderStyle(event.target.value)} value={borderStyle} label='Estilo da borda' options={borderTypes} name="border" />
               </Box>
             </Flex>
+          </AccordionComponent>
             <AccordionComponent title="Nome" mt="4">
               <Flex>
                 <Box w="60%" mr="4">
@@ -602,11 +659,39 @@ export default function Home() {
                 </Box>
               </Flex>
             </AccordionComponent>
+            <AccordionComponent title="Sociais" mt="4">
+              <Flex>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <Inputs onChange={(event) => setInstagram(event.target.value)} value={instagram} label='Instagram' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <Inputs onChange={(event) => setWhatsapp(event.target.value)} value={whatsapp} label='Whatsapp' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <Inputs onChange={(event) => setSite(event.target.value)} value={site} label='Site' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <Inputs onChange={(event) => setCardDate(event.target.value)} value={cardDate} label='Data' />
+                </Box>
+              </Flex>
+              <Flex>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <InputColor onChange={(event) => setInstagramFontColor(event.target.value)} value={instagramFontColor} label='Instagram' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']} mr="4">
+                  <InputColor onChange={(event) => setWhatsappFontColor(event.target.value)} value={whatsappFontColor} label='Whatsapp' />
+                </Box>
+                <Box w={['30%', '30%', '20%', '20%']}>
+                  <InputColor onChange={(event) => setSiteFontColor(event.target.value)} value={site} label='Site' />
+                </Box>
+                <SelectInput onChange={(event) => setSocialFontFamily(event.target.value)} value={socialFontFamily} label='Fonte' options={['Ubuntu', 'Koshy', 'Adam']} name="font" />
+              </Flex>
+            </AccordionComponent>
             <label htmlFor="fileInput">
               <Button as="a" size="md" fontSize="sm" bg="#3E1E24" leftIcon={<Icon as={FiUpload} fontSize="20" />} color="#BB975E" _hover={{ bg: '#BB975E', color: '#3E1E24' }}>
                 Adicionar imagem
               </Button>
-                
+
             </label>
             <Input
               type="file"
@@ -664,7 +749,7 @@ export default function Home() {
             </Button>
           </Box>
           <Flex direction="row" w="100%" justifyContent="center">
-            <Box
+            {/* <Box
               w="210mm"
               h="212mm"
               bg="white"
@@ -688,15 +773,6 @@ export default function Home() {
                       <Draggable onDrag={handleDragWineType}>
                         <div>{wine.type}</div>
                       </Draggable>
-                      {/* <Draggable onDrag={handleDragWineVineyard}>
-                        <div>{wine.vineyard}</div>
-                      </Draggable>
-                      <Draggable onDrag={handleDragWinePairing}>
-                        <div>{wine.pairing}</div>
-                      </Draggable>
-                      <Draggable onDrag={handleDragWinePrice}>
-                        <div>{wine.price}</div>
-                      </Draggable>                    */}
                     </div>
                   </div>
                 </div>
@@ -706,7 +782,7 @@ export default function Home() {
                   <ChakraImage src={image} alt="wine" style={styles.image} />
                 </div>
               </Resizable>
-            </Box>
+            </Box> */}
             <PDFView />
           </Flex>
         </Flex>

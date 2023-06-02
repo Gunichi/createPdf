@@ -6,6 +6,7 @@ interface SelectProps {
   name: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   value: string;
+  mr?: string;
 }
 
 const SelectInput: React.FC<SelectProps> = ({
@@ -14,9 +15,10 @@ const SelectInput: React.FC<SelectProps> = ({
   name,
   onChange,
   value,
+  mr,
 }) => {
   return (
-    <FormControl>
+    <FormControl mr={mr}>
       <FormLabel>{label}</FormLabel>
       <Select
         placeholder={label}
