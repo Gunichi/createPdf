@@ -253,6 +253,12 @@ export default function Home() {
       width: '100%',
       height: '100%'
     },
+    lastSectionPageImage: {
+      justifyContent: 'flex-end',
+      alignItems: 'flex-end',
+      width: '20%',
+      height: '20%'
+    },
     lastSectionPage: {
       justifyContent: 'center',
       alignItems: 'center',
@@ -260,8 +266,9 @@ export default function Home() {
       height: '100%'
     },
     logoImage: {
-      width: 200,
-      height: 150,
+      //Evitar que a imagem fique muito grande 
+      width: '250',
+      height: '180',
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -326,7 +333,7 @@ export default function Home() {
     },
     wineName: {
       fontSize: wineNameFontSize,
-      fontFamily: 'Ubuntu',
+      fontFamily: wineFontFamily,
       color: wineNameFontColor,
       top: wineNamePosition.y,
       left: wineNamePosition.x,
@@ -338,6 +345,7 @@ export default function Home() {
       fontStyle: 'italic',
       color: wineVolumeFontColor,
       marginBottom: 2,
+      fontFamily: wineFontFamily,
       top: wineVolumePosition.y,
       left: wineVolumePosition.x,
       textAlign: wineNameTextAlign,
@@ -346,34 +354,37 @@ export default function Home() {
     wineType: {
       fontSize: 12,
       marginTop: 2,
-      color: '#BB975E',
+      fontFamily: wineFontFamily,
+      color: wineTypeFontColor,
       marginBottom: 2,
     },
     wineVineyard: {
       fontSize: 10,
       marginTop: 2,
-      color: '#BB975E',
+      color: wineVineyardFontColor,
       marginBottom: 2,
+      fontFamily: wineFontFamily,
     },
     winePairing: {
       fontSize: 10,
       marginTop: 2,
-      color: '#BB975E',
+      color: winePairingFontColor,
       marginBottom: 2,
+      fontFamily: wineFontFamily,
     },
     winePrice: {
       fontSize: 12,
       marginTop: 2,
       fontWeight: 'bold',
-      fontFamily: 'Ubuntu',
-      color: '#BB975E',
+      fontFamily: wineFontFamily,
+      color: winePriceFontColor,
       marginBottom: 2,
     },
     instagram: {
       fontSize: 12,
       marginTop: 2,
       fontWeight: 'bold',
-      fontFamily: socialFontFamily,
+      fontFamily: wineFontFamily,
       color: instagramFontColor,
       marginBottom: 2,
     },
@@ -381,7 +392,7 @@ export default function Home() {
       fontSize: 12,
       marginTop: 2,
       fontWeight: 'bold',
-      fontFamily: socialFontFamily,
+      fontFamily: wineFontFamily,
       color: whatsappFontColor,
       marginBottom: 2,
     },
@@ -389,7 +400,7 @@ export default function Home() {
       fontSize: 12,
       marginTop: 2,
       fontWeight: 'bold',
-      fontFamily: socialFontFamily,
+      fontFamily: wineFontFamily,
       color: siteFontColor,
       marginBottom: 2,
     },
@@ -397,7 +408,7 @@ export default function Home() {
       fontSize: 12,
       marginTop: 2,
       fontWeight: 'bold',
-      fontFamily: socialFontFamily,
+      fontFamily: wineFontFamily,
       color: cardDateFontColor,
       marginBottom: 2,
     },
@@ -733,7 +744,8 @@ export default function Home() {
                 Remover vinho
               </Button>
             </SimpleGrid>
-            <Button
+              <PDFLink document={MyDocument} fileName="wine.pdf">
+              <Button
               mb="2"
               width="100%"
               bg={'#3E1E24'}
@@ -742,11 +754,11 @@ export default function Home() {
                 bg: '#BB975E',
                 color: '#3E1E24',
               }}
+
             >
-              <PDFLink document={MyDocument} fileName="wine.pdf">
                 Baixar PDF
+              </Button>
               </PDFLink>
-            </Button>
           </Box>
           <Flex direction="row" w="100%" justifyContent="center">
             {/* <Box
