@@ -11,9 +11,9 @@ interface AccordionProps {
 
 const AccordionComponent = ({ title, children, mt, mb }: AccordionProps) => {
   return (
-    <Accordion allowToggle _expanded={{ bg: '#BB975E', borderTopRadius: 'md'}} mt={mt} mb={mb}>
-      <AccordionItem border="none" boxShadow="md" borderRadius="md" mb={4}>
-        <AccordionButton _expanded={{ bg: '#BB975E', borderTopRadius: 'md'}} _hover={{ bg: '#BB975E' }}>
+    <Accordion allowToggle _expanded={{ bg: '#6b283e', borderTopRadius: 'md'}} mt={mt} mb={mb}>
+      <AccordionItem boxShadow="md" borderRadius="md" mb={8} borderColor={'#ffddf2'} borderWidth={2} _hover={{ borderColor: '#ffddf2' }}>
+        <AccordionButton _expanded={{ bg: '#6b283e', color: 'white', borderTopRadius: 'md'}} _hover={{ bg: '#6b283e', color: 'white' }}>
           <AccordionIcon />
           {title}
         </AccordionButton>
